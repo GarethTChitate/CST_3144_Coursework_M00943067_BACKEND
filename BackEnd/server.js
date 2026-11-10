@@ -1,7 +1,8 @@
+require ('dotenv').config({ path: './config.env'})
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-require ('dotenv').config({ path: './config.env'})
+
 
 const cors = require('cors');
 app.use(cors());
@@ -37,10 +38,11 @@ app.get('/lessons', async (req, res) => {
 
 app.post('/orders', async (req, res) => {
     try{
+        console.log("Received req.body:", req.body)
         if (!db) return res.status(500).json({ error: "Database not connected"})
         const newOrder = req.body;
         const result = await db.collection('Orders').insertOne(newOrder)
-        res.status(201).json({message: "Order created", orderId: result.insertId})    
+        res.status(201).json({message: "Order created", orderId: result.insertedId})    
     }
     catch (err) {
         res.status(500).json({error: 'Failed to save order', details: err.message})
