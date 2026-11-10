@@ -1,5 +1,4 @@
 const express = require('express');
-const { MongoClient, ObjectID } = require ( 'mongodb' )
 const app = express();
 const PORT = process.env.PORT || 3000;
 require ('dotenv').config({ path: './config.env'})
@@ -13,25 +12,22 @@ app.use ((req, res, next) => {
     next();
 })
 
-/*app.use('/images', express.static(path.join(__dirname, 'images')), (req, res) => {
-    res.status(404).json({ error: 'Image not found' })
-})*/
-
-const url = process.env.ATLAS_URL
+const { MongoClient, ObjectID } = require ( 'mongodb' )
+const uri = process.env.MONGODB_PREFIX + process.env.MONGODB_USERNAME + ":" + process.env.MONGODB_PASSWORD + process.env.MONGODB_URL
 let db;
 
-MongoClient.connect(url).then(client => {
+MongoClient.connect(uri).then(client => {
     console.log("Connected to MongoDB Atlas")
-    db = client.db('lessons')
+    db = client.db('Activities')
 })
 .catch(err => {
-    console.error("Database not found")
+    console.error("Connection failed:", err.message)
 })
 
 app.get('/lessons', async (req, res) => {
     try {
         if (!db) return res.status(500).json ({ error: "Database not found yet"})
-        const lessons = await db.collection('lessons').find({}).toArray()
+        const lessons = await db.collection('Lessons').find({}).toArray()
         res.json(lessons)
     }
     catch (err) {
@@ -43,7 +39,7 @@ app.post('/orders', async (req, res) => {
     try{
         if (!db) return res.status(500).json({ error: "Database not connected"})
         const newOrder = req.body;
-        const result = await db.collection('orders').insertOne(newOrder)
+        const result = await db.collection('Orders').insertOne(newOrder)
         res.status(201).json({message: "Order created", orderId: result.insertId})    
     }
     catch (err) {
@@ -57,7 +53,7 @@ app.put('/lessons/:id', async (req, res) => {
         const lessonId = req.params.id
         const newSpaces = req.body.newSpaces
         const query = !isNaN(lessonId) ? {id: Number(lessonId)} : {_id: new ObjectId(lessonId)}
-        const result = await db.collection('lesson').updateOne(query, {$set : {spaces: newSpaces}})
+        const result = await db.collection('Lessons').updateOne(query, {$set : {spaces: newSpaces}})
         if (result.matchedCount === 0){
             return res.status(404).json({error: 'Lesson not found'})
         res.json({message: "Spaces updated"})
