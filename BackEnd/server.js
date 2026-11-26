@@ -8,11 +8,13 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json())
 
+//Middleware logger
 app.use ((req, res, next) => {
     console.log(`Method: ${req.method} | URL: ${req.url}`)
     next();
 })
 
+// Connecting to MongoDB
 const { MongoClient, ObjectID } = require ( 'mongodb' )
 const uri = process.env.MONGODB_PREFIX + process.env.MONGODB_USERNAME + ":" + process.env.MONGODB_PASSWORD + process.env.MONGODB_URL
 let db;
@@ -25,6 +27,7 @@ MongoClient.connect(uri).then(client => {
     console.error("Connection failed:", err.message)
 })
 
+// GET Route for Lessons
 app.get('/lessons', async (req, res) => {
     try {
         if (!db) return res.status(500).json ({ error: "Database not found yet"})
@@ -36,6 +39,7 @@ app.get('/lessons', async (req, res) => {
     }
 })
 
+// POST Route to add new orders to the ORDERS database
 app.post('/orders', async (req, res) => {
     try{
         console.log("Received req.body:", req.body)
@@ -49,6 +53,7 @@ app.post('/orders', async (req, res) => {
     }
 })
 
+//PUT route to edit the number of spaces
 app.put('/lessons/:id', async (req, res) => {
     try{
         if (!db) return res.status(500).json({error: "Database not connected"})
