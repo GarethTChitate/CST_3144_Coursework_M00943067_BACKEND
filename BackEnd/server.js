@@ -30,12 +30,24 @@ MongoClient.connect(uri).then(client => {
 // GET Route for Lessons
 app.get('/lessons', async (req, res) => {
     try {
-        if (!db) return res.status(500).json ({ error: "Database not found yet"})
+        const filter = {}
+        if (req.query.teacherId && req.query.teacherId !== 'All'){
+            filter.teacherId = req.query.teacherId
+        }
         const lessons = await db.collection('Lessons').find({}).toArray()
         res.json(lessons)
     }
     catch (err) {
         res.status(500).json({ error: "Failed to fetch lessons", details: err.message})
+    }
+})
+
+app.get('/teachers', async (req, res) => {
+    try {
+        const teachers = await db.collection('Teachers').find({}).toArray()
+        res.json(teachers)
+    } catch (err){
+        res.status(500).json({error: 'Failed to get teachers'})
     }
 })
 
